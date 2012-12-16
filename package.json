@@ -1,0 +1,35 @@
+{
+    "name": "card-swipe",
+    "homepage": "https://github.com/khrome/card-swipe",
+    "version": "0.0.1-alpha",
+    "main": "card-swipe.js",
+    "description": "A utility for detecting CC track inputs from streaming character data and for extracting data from them",
+    "keywords": [
+        "credit cards",
+        "card swipe",
+        "track data"
+    ],
+    "author": "Abbey Hawk Sparrow <@khrome> (http://patternweaver.com)",
+    "contributors": [],
+    "bugs": {
+        "url": "https://github.com/khrome/card-swipe/issues"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/khrome/card-swipe.git"
+    },
+    "dependencies": {
+        "prime": "*"
+    },
+    "devDependencies": {
+        "mocha": "*",
+        "should": "*",
+        "faker2": "*"
+    },
+    "optionalDependencies": {
+    },
+    "engines": {
+        "node": "*"
+    }
+}
