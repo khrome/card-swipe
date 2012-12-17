@@ -1,5 +1,4 @@
 var prime = require('prime');
-var Class = require('Classy');
 var type = require('prime/util/type');
 var array = require('prime/es5/array');
 var fn = require('prime/es5/function');
@@ -2279,6 +2278,7 @@ Keyboard.Sequence.issuers = {
     "9280" : "BSW Bonus Card (www.bsw.de)"
 };
 module.exports = CreditSwipe;
+module.exports.Scanner = ScanBuffer;
 module.exports.types = Keyboard.Sequence.types;
 module.exports.generate = function(type, options){
     if(!options) options = {};
@@ -2307,13 +2307,13 @@ module.exports.generate = function(type, options){
             return number;
             break;
         case 'expiration':
-            return '0415';
+            return '1504';
         case 'list_name':
             return 'Ed Beggler';
         case 'track_one':
-            return '%B'+get('account')+'^'+get('list_name').toUpperCase()+'^'+get('expiration')+'XXX'+'A' /* 'BBB' or 'CCCC'*/ +'?';
+            return '%B'+get('account')+'^'+get('list_name').toUpperCase()+'^'+get('expiration')+'333'+'333333' /* 'A', 'BBB' or 'CCCC'*/ +'?';
         case 'track_two':
-            return ';'+get('account')+'='+get('expiration')+'XXX'+'A' /* 'BBB' or 'CCCC'*/ +'?';
+            return ';'+get('account')+'='+get('expiration')+'333'+'333333' /* 'A', 'BBB' or 'CCCC'*/ +'?';
         case 'track_data' :
             return [
                 get('track_one'),
@@ -2334,4 +2334,12 @@ module.exports.stdIn = function(){
         if (key && key.ctrl && key.name == 'c') process.exit();
     });
     return CreditSwipe;
+}
+module.exports.fake = function(scanner, options){
+    var tracks = module.exports.generate('track_data', options);
+    tracks.forEach(function(track){
+        for(var lcv=0; lcv < track.length; lcv++){
+            scanner.input(track[lcv]);
+        }
+    });
 }
