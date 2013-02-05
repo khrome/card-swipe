@@ -258,6 +258,8 @@ Keyboard.Sequence.types = {
 };
     
 Keyboard.Sequence.issuers = {
+    //todo: switch to new format:
+    // Issuer Name [Card Name]<Network>|country|{details}
     "377750" : "American Express Platinum LifeMiles Card - Banco Internacional del Perú (Interbank)",
     "377753" : "American Express Gold credit card - Banco Internacional del Perú (Interbank)",
     "370244" : "BANESCO (BancUnion) American Express Gold - Venezuela.",
