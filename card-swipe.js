@@ -1,9 +1,10 @@
-var prime = require('prime');
-var type = require('prime/util/type');
-var array = require('prime/es5/array');
-var fn = require('prime/es5/function');
+//var prime = require('prime');
+//var type = require('prime/util/type');
+//var array = require('prime/es5/array');
+//var fn = require('prime/es5/function');
+var objectTool = require('../async-objects');
 var Keyboard = {};
-array.combine = function(thisArray, thatArray){
+/*array.combine = function(thisArray, thatArray){
     //var result = [];
     array.forEach(thatArray, function(value, key){
         thisArray.push(value);
@@ -51,7 +52,7 @@ prime.clone = function(obj){
         default : result = obj;
     }
     return result;
-};
+};*/
 var extractIssuerData = function(account){
     var results = {}
     if(!Keyboard.Sequence.issuers) return results;
@@ -90,7 +91,7 @@ var extractTypeData = function(account){
     if(!Keyboard.Sequence.types) return results;
     var length = account.length;
     if(Keyboard.Sequence.types[length]){
-        prime.each(Keyboard.Sequence.types[length], function(type, prefix){
+        objectTool.forEach(Keyboard.Sequence.types[length], function(type, prefix){
             if(account.indexOf(prefix) === 0) results.type = type;
         });
     }else{
@@ -113,7 +114,7 @@ var ScanBuffer = function(options){
     };
     this.scan = function(){
         var terminated = false;
-        array.forEach(scanners, function(scanner){
+        scanners.forEach( function(scanner){
             if(terminated) return;
             var result;
             if(result = scanner.test(buffer)){
@@ -136,17 +137,16 @@ var ScanBuffer = function(options){
 };
 var internalScanner = false;
 var matchTree = function(tree, value){
-    var keys = prime.keys(tree);
+    var keys = Object.keys(tree);
     var size = 0;
     var match = false;
-    array.forEach(keys, function(key){
+    keys.forEach(function(key){
         if(value.indexOf(key) === 0 && size < key.length){
             match = key;
             size = key.length
         }
     });
     if(!match) return undefined;
-    console.log(typeof tree[match]);
 };
 var CreditSwipe = function(options){
     if(typeof options == 'function') options = {onScan:options};
@@ -200,10 +200,10 @@ var CreditSwipe = function(options){
                         }
                     });
                     if(Keyboard.Sequence.issuers && results.account){
-                        results = prime.merge(results, extractIssuerData(results.account));
+                        results = objectTool.merge(results, extractIssuerData(results.account));
                     }
                     if(Keyboard.Sequence.types && results.account){
-                        results = prime.merge(results, extractTypeData(results.account));
+                        results = objectTool.merge(results, extractTypeData(results.account));
                     }
                     if(options.luhn){
                         results['valid'] = require("luhn").luhn.validate(results.account);
@@ -2295,11 +2295,11 @@ module.exports.generate = function(type, options){
     switch(type){
         case 'account':
             var luhn = require("luhn").luhn;
-            var keys = prime.keys(Keyboard.Sequence.types);
+            var keys = Object.keys(Keyboard.Sequence.types);
             var size = keys[Math.floor(Math.random()*keys.length)];
             var options = Keyboard.Sequence.types[size];
             var number = '';
-            prime.random(options, function(item, prefix){
+            objectTool.random(options, function(item, prefix){
                 number = prefix;
             });
             while(number.length < size){

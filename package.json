@@ -1,7 +1,7 @@
 {
     "name": "card-swipe",
     "homepage": "https://github.com/khrome/card-swipe",
-    "version": "0.0.2-alpha",
+    "version": "0.1.0-beta",
     "main": "card-swipe.js",
     "description": "A utility for detecting CC track inputs from streaming character data and extracting data from them",
     "keywords": [
@@ -20,7 +20,7 @@
         "url": "git://github.com/khrome/card-swipe.git"
     },
     "dependencies": {
-        "prime": "0.0.5-alpha"
+        "async-objects": "*"
     },
     "devDependencies": {
         "mocha": "*",
