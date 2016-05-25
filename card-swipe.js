@@ -64,7 +64,7 @@ var extractIssuerData = function(account){
     for(var lcv=0; lcv <= 2; lcv++){
         sequence = account.substring(0,4)+account.substring(4,4+lcv);
         if(issuerInfo = Keyboard.Sequence.issuers[sequence]){
-            if(type(issuerInfo) == 'string'){
+            if(typeof issuerInfo == 'string'){
                 issuer = issuerInfo;
             }else if(issuerInfo.from && issuerInfo.to){
                 width = issuerInfo.from.length;
