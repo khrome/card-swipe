@@ -1,4 +1,4 @@
-var objectTool = require('../async-objects');
+var objectTool = require('async-objects');
 var Keyboard = {};
 var extractIssuerData = function(account){
     var results = {}
