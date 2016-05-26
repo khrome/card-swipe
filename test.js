@@ -1,5 +1,5 @@
 var should = require("should");
-var Swipe = require('./card-swipe');
+var Swipe = require('./card-swipe.js');
 
 describe('CreditSwipe', function(){
     
