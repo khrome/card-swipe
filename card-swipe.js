@@ -61,73 +61,73 @@ var matchTree = function(tree, value){
 };
 var internalScanner;
 var CreditSwipe = function(options){
-	if(typeof options == 'function') options = {onScan:options};
+    if(typeof options == 'function') options = {onScan:options};
     if(!options) options = {};
     if(!options.scanner && !internalScanner) internalScanner = new CharacterScanBuffer();
     var scanner = options.scanner || internalScanner;
     if(!options.onScan) throw('Missing \'onScan\' option!');
     var res = [];
     var callback = options.onScan || options.callback;
-	scanner.addScanner({
-		name:'credit-swipe',
-		scan: function(str){
-			return str.match(/%B[0-9 ]{13,18}\^[\/A-Z ]+\^[0-9]{13,}\?/mi) || str.match(/;[0-9]{13,16}=[0-9]{13,}\?/mi);
-		}
+    scanner.addScanner({
+        name:'credit-swipe',
+        scan: function(str){
+            return str.match(/%B[0-9 ]{13,18}\^[\/A-Z ]+\^[0-9]{13,}\?/mi) || str.match(/;[0-9]{13,16}=[0-9]{13,}\?/mi);
+        }
     });
     scanner.on('credit-swipe', function(result){
-	    var results = {};
+        var results = {};
         var something = false;
-	    if(result.substring(0,1) == '%'){
-			var parts = result.substring(2,result.length-2).split('^');
-			results.account = parts[0];
-			if(parts[1].indexOf('/') != -1){
-				var last = parts[1].substring(0, parts[1].indexOf('/'));
-				last = last.substring(0,1).toUpperCase()+last.substring(1, last.length).toLowerCase();
-				results.last_name = last;
-				var first = parts[1].substring(parts[1].indexOf('/')+1, parts[1].length);
-				if(first.indexOf(' ') != -1){
-					results.middle_initial = first.substring(first.indexOf(' ')+1, first.length).trim();
-					first = first.substring(0, first.indexOf(' '));
-				}
-				first = first.substring(0,1).toUpperCase()+first.substring(1, first.length).toLowerCase();
-				results.first_name = first;
-				results.name = first+' '+last;
-			}else results.name = parts[1];
-			results.exp_year = parts[2].substring(0, 2);
-			results.exp_month = parts[2].substring(2, 4);
-			results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
-			results.track_one = result;
-			something = true;
-		}
-		if(result.substring(0,1) == ';'){
-			var parts = result.substring(1,result.length-1).split('=');
-			results.account = parts[0];
-			results.exp_year = parts[1].substring(0, 2);
-			results.exp_month = parts[1].substring(2, 4);
-			results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
-			results.track_two = result;
-			something = true;
-		}
-		if(Keyboard.Sequence.issuers && results.account){
-			results = objectTool.merge(results, extractIssuerData(results.account));
-		}
-		if(Keyboard.Sequence.types && results.account){
-			results = objectTool.merge(results, extractTypeData(results.account));
-		}
-		if(options.luhn){
-			results['valid'] = require("luhn").luhn.validate(results.account);
-		}
-		res.push(results);
-		setTimeout(function(){
-			var results = res.shift() || {};
-			res.forEach(function(item){
-				Object.keys(item).forEach(function(fieldName){
-					if(!results[fieldName]) results[fieldName] = item[fieldName];
-				});
-			});
-			res = [];
-			callback(results);
-		}, 50); //allow for 50ms of latency for a full scan
+        if(result.substring(0,1) == '%'){
+            var parts = result.substring(2,result.length-2).split('^');
+            results.account = parts[0];
+            if(parts[1].indexOf('/') != -1){
+                var last = parts[1].substring(0, parts[1].indexOf('/'));
+                last = last.substring(0,1).toUpperCase()+last.substring(1, last.length).toLowerCase();
+                results.last_name = last;
+                var first = parts[1].substring(parts[1].indexOf('/')+1, parts[1].length);
+                if(first.indexOf(' ') != -1){
+                    results.middle_initial = first.substring(first.indexOf(' ')+1, first.length).trim();
+                    first = first.substring(0, first.indexOf(' '));
+                }
+                first = first.substring(0,1).toUpperCase()+first.substring(1, first.length).toLowerCase();
+                results.first_name = first;
+                results.name = first+' '+last;
+            }else results.name = parts[1];
+            results.exp_year = parts[2].substring(0, 2);
+            results.exp_month = parts[2].substring(2, 4);
+            results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
+            results.track_one = result;
+            something = true;
+        }
+        if(result.substring(0,1) == ';'){
+            var parts = result.substring(1,result.length-1).split('=');
+            results.account = parts[0];
+            results.exp_year = parts[1].substring(0, 2);
+            results.exp_month = parts[1].substring(2, 4);
+            results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
+            results.track_two = result;
+            something = true;
+        }
+        if(Keyboard.Sequence.issuers && results.account){
+            results = objectTool.merge(results, extractIssuerData(results.account));
+        }
+        if(Keyboard.Sequence.types && results.account){
+            results = objectTool.merge(results, extractTypeData(results.account));
+        }
+        if(options.luhn){
+            results['valid'] = require("luhn").luhn.validate(results.account);
+        }
+        res.push(results);
+        setTimeout(function(){
+            var results = res.shift() || {};
+            res.forEach(function(item){
+                Object.keys(item).forEach(function(fieldName){
+                    if(!results[fieldName]) results[fieldName] = item[fieldName];
+                });
+            });
+            res = [];
+            callback(results);
+        }, 50); //allow for 50ms of latency for a full scan
     });
 };
     
@@ -136,7 +136,7 @@ Keyboard.Sequence = {};
 Keyboard.Sequence.types = require('./card_type');
 var intKeys = {};
 Object.keys(Keyboard.Sequence.types).forEach(function(stringKey){
-	intKeys[parseInt(stringKey)] = Keyboard.Sequence.types[stringKey];
+    intKeys[parseInt(stringKey)] = Keyboard.Sequence.types[stringKey];
 });
 Keyboard.Sequence.types = intKeys;
 
