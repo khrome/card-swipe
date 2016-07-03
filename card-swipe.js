@@ -1,4 +1,5 @@
 var objectTool = require('async-objects');
+var CharacterScanBuffer = require('character-scanner');
 var Keyboard = {};
 var extractIssuerData = function(account){
     var results = {}
@@ -46,43 +47,6 @@ var extractTypeData = function(account){
     }
     return results;
 };
-var ScanBuffer = function(options){
-    if(!options) options ={};
-    var buffer = [];
-    var times = [];
-    var scanners = [];
-    var interval = options.interval || 1000;
-    this.addScanner = function(test, callback, terminates){
-        scanners.push({
-            test : test,
-            callback : callback,
-            terminates : terminates,
-        });
-    };
-    this.scan = function(){
-        var terminated = false;
-        scanners.forEach( function(scanner){
-            if(terminated) return;
-            var result;
-            if(result = scanner.test(buffer)){
-                scanner.callback(result);
-                if(scanner.terminates) terminated = true;
-                buffer = [];
-            }
-        });
-    }
-    this.input = function(value){
-        var now = new Date().getTime();
-        while(now - times[0] > interval){
-            times.shift();
-            buffer.shift();
-        }
-        times.push(now);
-        buffer.push(value);
-        this.scan();
-    };
-};
-var internalScanner = false;
 var matchTree = function(tree, value){
     var keys = Object.keys(tree);
     var size = 0;
@@ -95,78 +59,76 @@ var matchTree = function(tree, value){
     });
     if(!match) return undefined;
 };
+var internalScanner;
 var CreditSwipe = function(options){
-    if(typeof options == 'function') options = {onScan:options};
+	if(typeof options == 'function') options = {onScan:options};
     if(!options) options = {};
-    if(!options.scanner && !internalScanner) internalScanner = new ScanBuffer();
+    if(!options.scanner && !internalScanner) internalScanner = new CharacterScanBuffer();
     var scanner = options.scanner || internalScanner;
     if(!options.onScan) throw('Missing \'onScan\' option!');
     var res = [];
-    var callback = options.onScan;
-    var internalTimedBuffer = function(value){
-        res.push(value);
-        setTimeout(function(){
-            try{
-                if(res.length > 0){
-                    var ress = res;
-                    res = [];
-                    var results = {};
-                    var something = false;
-                    ress.forEach(function(result){
-                        result = result.toString();
-                        if(result.substring(0,1) == '%'){
-                            var parts = result.substring(2,result.length-2).split('^');
-                            results.account = parts[0];
-                            if(parts[1].indexOf('/') != -1){
-                                var last = parts[1].substring(0, parts[1].indexOf('/'));
-                                last = last.substring(0,1).toUpperCase()+last.substring(1, last.length).toLowerCase();
-                                results.last_name = last;
-                                var first = parts[1].substring(parts[1].indexOf('/')+1, parts[1].length);
-                                if(first.indexOf(' ') != -1){
-                                    results.middle_initial = first.substring(first.indexOf(' ')+1, first.length).trim();
-                                    first = first.substring(0, first.indexOf(' '));
-                                }
-                                first = first.substring(0,1).toUpperCase()+first.substring(1, first.length).toLowerCase();
-                                results.first_name = first;
-                                results.name = first+' '+last;
-                            }else results.name = parts[1];
-                            results.exp_year = parts[2].substring(0, 2);
-                            results.exp_month = parts[2].substring(2, 4);
-                            results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
-                            results.track_one = result;
-                            something = true;
-                        }
-                        if(result.substring(0,1) == ';'){
-                            var parts = result.substring(1,result.length-1).split('=');
-                            results.account = parts[0];
-                            results.exp_year = parts[1].substring(0, 2);
-                            results.exp_month = parts[1].substring(2, 4);
-                            results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
-                            results.track_two = result;
-                            something = true;
-                        }
-                    });
-                    if(Keyboard.Sequence.issuers && results.account){
-                        results = objectTool.merge(results, extractIssuerData(results.account));
-                    }
-                    if(Keyboard.Sequence.types && results.account){
-                        results = objectTool.merge(results, extractTypeData(results.account));
-                    }
-                    if(options.luhn){
-                        results['valid'] = require("luhn").luhn.validate(results.account);
-                    }
-                    callback(results);
-                    matchTree(Keyboard.Sequence.types, results.account);
-                }
-            }catch(ex){
-                console.log(ex.stack);
-            }
-        }, 400);
-    }
-    scanner.addScanner(function(buffer){
-        var str = buffer.join('');
-        return str.match(/%B[0-9 ]{13,18}\^[\/A-Z ]+\^[0-9]{13,}\?/mi) || str.match(/;[0-9]{13,16}=[0-9]{13,}\?/mi);
-    }, internalTimedBuffer, true);
+    var callback = options.onScan || options.callback;
+	scanner.addScanner({
+		name:'credit-swipe',
+		scan: function(str){
+			return str.match(/%B[0-9 ]{13,18}\^[\/A-Z ]+\^[0-9]{13,}\?/mi) || str.match(/;[0-9]{13,16}=[0-9]{13,}\?/mi);
+		}
+    });
+    scanner.on('credit-swipe', function(result){
+	    var results = {};
+        var something = false;
+	    if(result.substring(0,1) == '%'){
+			var parts = result.substring(2,result.length-2).split('^');
+			results.account = parts[0];
+			if(parts[1].indexOf('/') != -1){
+				var last = parts[1].substring(0, parts[1].indexOf('/'));
+				last = last.substring(0,1).toUpperCase()+last.substring(1, last.length).toLowerCase();
+				results.last_name = last;
+				var first = parts[1].substring(parts[1].indexOf('/')+1, parts[1].length);
+				if(first.indexOf(' ') != -1){
+					results.middle_initial = first.substring(first.indexOf(' ')+1, first.length).trim();
+					first = first.substring(0, first.indexOf(' '));
+				}
+				first = first.substring(0,1).toUpperCase()+first.substring(1, first.length).toLowerCase();
+				results.first_name = first;
+				results.name = first+' '+last;
+			}else results.name = parts[1];
+			results.exp_year = parts[2].substring(0, 2);
+			results.exp_month = parts[2].substring(2, 4);
+			results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
+			results.track_one = result;
+			something = true;
+		}
+		if(result.substring(0,1) == ';'){
+			var parts = result.substring(1,result.length-1).split('=');
+			results.account = parts[0];
+			results.exp_year = parts[1].substring(0, 2);
+			results.exp_month = parts[1].substring(2, 4);
+			results.expiration = new Date(results.exp_month+'/01/'+results.exp_year);
+			results.track_two = result;
+			something = true;
+		}
+		if(Keyboard.Sequence.issuers && results.account){
+			results = objectTool.merge(results, extractIssuerData(results.account));
+		}
+		if(Keyboard.Sequence.types && results.account){
+			results = objectTool.merge(results, extractTypeData(results.account));
+		}
+		if(options.luhn){
+			results['valid'] = require("luhn").luhn.validate(results.account);
+		}
+		res.push(results);
+		setTimeout(function(){
+			var results = res.shift() || {};
+			res.forEach(function(item){
+				Object.keys(item).forEach(function(fieldName){
+					if(!results[fieldName]) results[fieldName] = item[fieldName];
+				});
+			});
+			res = [];
+			callback(results);
+		}, 50); //allow for 50ms of latency for a full scan
+    });
 };
     
 Keyboard.Sequence = {};
@@ -183,7 +145,7 @@ Keyboard.Sequence.types = intKeys;
 Keyboard.Sequence.issuers = require('./issuer_data');
 
 module.exports = CreditSwipe;
-module.exports.Scanner = ScanBuffer;
+module.exports.Scanner = CharacterScanBuffer;
 module.exports.types = Keyboard.Sequence.types;
 module.exports.generate = function(type, options){
     if(!options) options = {};
