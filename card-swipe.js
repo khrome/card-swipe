@@ -115,7 +115,7 @@ var CreditSwipe = function(options){
             results = objectTool.merge(results, extractTypeData(results.account));
         }
         if(options.luhn){
-            results['valid'] = require("luhn").luhn.validate(results.account);
+            results['valid'] = require("luhn").validate(results.account);
         }
         res.push(results);
         setTimeout(function(){
@@ -159,7 +159,7 @@ module.exports.generate = function(type, options){
     };
     switch(type){
         case 'account':
-            var luhn = require("luhn").luhn;
+            var luhn = require("luhn");
             var keys = Object.keys(Keyboard.Sequence.types);
             var size = keys[Math.floor(Math.random()*keys.length)];
             var options = Keyboard.Sequence.types[size];

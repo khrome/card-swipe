@@ -3,6 +3,9 @@
     "homepage": "https://github.com/khrome/card-swipe",
     "version": "1.0.3",
     "main": "card-swipe.js",
+    "scripts": {
+        "test": " ./node_modules/mocha/bin/mocha"
+    },
     "description": "A utility for detecting CC track inputs from streaming character data and extracting data from them",
     "keywords": [
         "credit cards",
@@ -20,16 +23,13 @@
         "url": "git://github.com/khrome/card-swipe.git"
     },
     "dependencies": {
-        "async-objects": "*",
-        "character-scanner": "*"
+        "async-objects": "^0.1.0",
+        "character-scanner": "0.0.1",
+        "luhn": "^2.1.0"
     },
     "devDependencies": {
-        "mocha": "*",
-        "should": "*",
-        "luhn": "*",
-        "faker2": "*"
-    },
-    "optionalDependencies": {
+        "mocha": "^2.5.3",
+        "should": "^10.0.0"
     },
     "engines": {
         "node": "*"
