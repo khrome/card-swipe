@@ -1,5 +1,10 @@
 card-swipe.js
 ==============
+
+[![NPM version](https://img.shields.io/npm/v/card-swipe.svg)]()
+[![npm](https://img.shields.io/npm/dt/card-swipe.svg)]()
+[![Travis](https://img.shields.io/travis/khrome/card-swipe.svg)]()
+
 A utility for detecting CC track inputs from streaming character data and for extracting data from them.
 
 A credit card magstripe contains a string of data representing a composite of account details. A 'card present' transaction (which gives you a better retail percentage on your transaction fees) generally consists of setting a flag and passing along this data, which has strict regulations on them preventing them from ever being saved to disk. Normally a magstripe is just a keyboard as far as the OS knows, which often leads to tedious PC POS interfaces where you click into a field and then swipe the card, your other option is to build an input sniffer which allows you to scan time restricted character buffers for track data patterns, so you can react/generate events/whatever. So that's what this is, you plug keystroke input into it, it reacts whenever it sees a cardswipe. In addition it can use bin ranges on the account number to determine account type and issuer.
