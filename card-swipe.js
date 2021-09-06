@@ -74,7 +74,22 @@ var CreditSwipe = function(options){
             return str.match(/%B[0-9 ]{13,18}\^[\/A-Z ]+\^[0-9]{13,}\?/mi) || str.match(/;[0-9]{13,16}=[0-9]{13,}\?/mi);
         }
     });
-    scanner.on('credit-swipe', function(result){
+    var swipes = {};
+    var finalSwipe = function(results, cb){
+        if(!swipes[results.account]) swipes[results.account] = results;
+        else{
+            Object.keys(results).forEach((key)=>{
+                swipes[results.account][key] = results[key];
+            });
+        }
+        setTimeout(()=>{
+            let swipe = swipes[results.account];
+            delete swipes[results.account];
+            if(swipe) cb(swipe)
+        }, 200);
+    }
+    scanner.on('credit-swipe', function(res){
+        var result = res[0] || res;
         var results = {};
         var something = false;
         if(result.substring(0,1) == '%'){
@@ -117,20 +132,10 @@ var CreditSwipe = function(options){
         if(options.luhn){
             results['valid'] = require("luhn").validate(results.account);
         }
-        res.push(results);
-        setTimeout(function(){
-            var results = res.shift() || {};
-            res.forEach(function(item){
-                Object.keys(item).forEach(function(fieldName){
-                    if(!results[fieldName]) results[fieldName] = item[fieldName];
-                });
-            });
-            res = [];
-            callback(results);
-        }, 50); //allow for 50ms of latency for a full scan
+        finalSwipe(results, callback);
     });
 };
-    
+
 Keyboard.Sequence = {};
 
 Keyboard.Sequence.types = require('./card_type');
@@ -141,7 +146,7 @@ Object.keys(Keyboard.Sequence.types).forEach(function(stringKey){
 Keyboard.Sequence.types = intKeys;
 
 //todo: switch to new format:
-// Issuer Name [Card Name]<Network>|country|{details} 
+// Issuer Name [Card Name]<Network>|country|{details}
 Keyboard.Sequence.issuers = require('./issuer_data');
 
 module.exports = CreditSwipe;
@@ -187,7 +192,7 @@ module.exports.generate = function(type, options){
                 get('track_two')
             ]
         default : return 'blah';
-        
+
     }
 };
 module.exports.stdIn = function(){

@@ -1,7 +1,7 @@
 {
     "name": "card-swipe",
     "homepage": "https://github.com/khrome/card-swipe",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "main": "card-swipe.js",
     "scripts": {
         "test": " ./node_modules/mocha/bin/mocha"

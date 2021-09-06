@@ -13,16 +13,16 @@ Usage
 -----
 
 require the library
-    
+
     var Swipe = require('card-swipe');
-    
+
 the simplest way to get it running is to use the built-in stdio hook to get it running from the terminal:
 
     Swipe.stdIn()
     new Swipe(function(swipeData){
         console.log('swipe', swipeData);
     });
-    
+
 
 this is the shorthand for:
 
@@ -40,20 +40,59 @@ this is the shorthand for:
         for(var lcv=0; lcv < chunk.length; lcv++) scanner.input(chunk[lcv]);
         if (key && key.ctrl && key.name == 'c') process.exit();
     });
-    
+
 likely if you are integrating this into an app, stdin is not going to be good enough for you... but luckily the scanner will wire up to just about anything.
 
 Additionally, so I could test these things out I built a generator function
 
     Swipe.generate(field, [values])
-    
+
 which can generate luhn and bin valid account numbers, track_one and track_two data (since you can't really be saving these things, and test cards are continually expiring).
 
 and for my testing harness
 
     Swipe.fake(scanner)
-    
+
 which generates a random fake swipe across the passed in scanner.
+
+Browser Example - Vue Component
+-------------------------------
+
+```html
+<template>
+    <div class="swipe">
+        <slot></slot>
+    </div>
+</template>
+
+<script>
+    import * as Swipe from 'card-swipe';
+
+    export default {
+        name: 'CardSwipe',
+        methods : {
+          handleSwipe : function(swipe){
+              console.log('CHAR', swipe);
+          }
+        },
+        created: function(){
+            window.addEventListener('keydown', (e)=>{
+                if(e.key.length === 1) scanner.input(e.key);
+                //if(e.key === 'Enter') scanner.input("\n");
+            });
+            let scanner = new Swipe.Scanner();
+            new Swipe({
+                scanner : scanner,
+                onScan : (swipeData)=>{
+                    this.handleSwipe(swipeData);
+                    console.log('swipe', swipeData);
+                }
+            });
+        }
+    }
+</script>
+<style scoped></style>
+```
 
 Testing
 -------
